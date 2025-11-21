@@ -28,9 +28,9 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: .fromSeed(seedColor: const Color.fromARGB(255, 214, 87, 174)),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'SOLARA'),
     );
   }
 }
@@ -112,9 +112,10 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
+      // IMPLEMENT POWER BUTTON HERE 
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
-        tooltip: 'Increment',
+        tooltip: 'Power On/Off',
         child: const Icon(Icons.add),
       ),
     );
