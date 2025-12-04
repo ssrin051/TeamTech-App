@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'screens/bluetooth_test_screen.dart';
+
+MaterialApp(
+  home: BluetoothTestScreen(),
+);
+
 
 void main() {
   runApp(const MyApp());
