@@ -57,5 +57,5 @@ class _OnOffToggleState extends State<OnOffToggle> {
         ),
       ),
     );
-  }
+  } 
 }
