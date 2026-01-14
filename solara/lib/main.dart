@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'on_off.dart'; // your toggle widget
+import 'on_off.dart';
 
 void main() {
   runApp(const MyToggleDemo());
