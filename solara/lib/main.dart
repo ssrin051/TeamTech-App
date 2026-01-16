@@ -3,11 +3,11 @@ import 'bluetooth_screen.dart';
 import 'on_off.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const MyToggleDemo());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyToggleDemo extends StatelessWidget {
+  const MyToggleDemo({super.key});
 
   @override
   Widget build(BuildContext context) {
