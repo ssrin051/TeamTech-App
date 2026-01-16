@@ -5,7 +5,7 @@ import 'package:solara/main.dart';
 void main() {
 testWidgets('Leash Distance slider renders and responds to drag',
     (WidgetTester tester) async {
-  await tester.pumpWidget(const MyApp());
+  await tester.pumpWidget(const MyToggleDemo());
 
   //Verify label text
   expect(find.text('Leash Distance'), findsOneWidget);
