@@ -14,6 +14,7 @@ class BluetoothButton extends StatelessWidget {
       label: Text('Connect Bluetooth'),
       style: ElevatedButton.styleFrom(
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        foregroundColor: Color.fromRGBO(255, 187, 210, 1),
       ),
     );
   }

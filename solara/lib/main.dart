@@ -36,7 +36,7 @@ class HomePage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.purple,
+                  color: Color.fromRGBO(225, 122, 156, 1),
                 ),
               ),
               const SizedBox(height: 30),

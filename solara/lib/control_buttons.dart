@@ -51,7 +51,7 @@ class _ControlButtonsState extends State<ControlButtons> {
                 max: 100,
                 divisions: 100,
                 label: '${brightness.round()}%',
-                activeColor: Colors.purple,
+                activeColor: Color.fromRGBO(255, 187, 210, 1),
                 onChanged: (value) {
                   setState(() {
                     brightness = value;
@@ -85,7 +85,7 @@ class _ControlButtonsState extends State<ControlButtons> {
           label: const Text('View Status'),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 15),
-            backgroundColor: Colors.purple,
+            backgroundColor: Color.fromRGBO(255, 187, 210, 1),
             foregroundColor: Colors.white,
           ),
         ),
@@ -100,7 +100,7 @@ class _ControlButtonsState extends State<ControlButtons> {
           label: const Text('Settings'),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 15),
-            backgroundColor: Colors.purple,
+            backgroundColor: Color.fromRGBO(255, 187, 210, 1),
             foregroundColor: Colors.white,
           ),
         ),
@@ -115,7 +115,7 @@ class _ControlButtonsState extends State<ControlButtons> {
           label: const Text('Set Timer'),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 15),
-            backgroundColor: Colors.purple,
+            backgroundColor: Color.fromRGBO(255, 187, 210, 1),
             foregroundColor: Colors.white,
           ),
         ),
@@ -132,7 +132,7 @@ class _ControlButtonsState extends State<ControlButtons> {
         });
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.purple : Colors.grey[300],
+        backgroundColor: isSelected ? Color.fromRGBO(255, 187, 210, 1) : Colors.grey[300],
         foregroundColor: isSelected ? Colors.white : Colors.black,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       ),
