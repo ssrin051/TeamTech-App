@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'bluetooth_screen.dart';
 import 'on_off.dart';
 
 
@@ -13,69 +14,45 @@ class MyToggleDemo extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'SOLARA',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  double _sliderValue = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 24, left: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const OnOffToggle(),
-            const SizedBox(height: 24),
-            
-            //slider
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                
-                const Text(
-                  'Leash Distance',
-                  style: TextStyle(fontSize: 14),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 180,
-                  child: Slider(
-                    value: _sliderValue,
-                    min: 0,
-                    max: 100,
-                    onChanged: (value) {
-                      setState(() {
-                        _sliderValue = value;
-                      });
-                    },
+        useMaterial3: true,
+      home: Scaffold(
+        body: Stack(
+          children:[
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/logos/solara_logo.png',
+                    height: 150,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  const OnOffToggle(),
+                ],
+              ),
+            ),
+
+            Positioned(
+              top: 40,    // Distance from the top
+              right: 20,  // Distance from the right
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset('assets/logos/gcap_logo.png', height: 40),
+                  const SizedBox(height: 15),
+                  Image.asset('assets/logos/swe_logo.png', height: 40),
+                  const SizedBox(height: 15),
+                  Image.asset('assets/logos/tt_logo.png', height: 40),
+                ],
+              ),
             ),
           ],
-        ),
+        ),  
       ),
+      home: const BluetoothScreen(),
     );
   }
 }
