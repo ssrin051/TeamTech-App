@@ -46,3 +46,5 @@ app.*.map.json
 /android/app/release
 solara/lib/oracleJdk-25/bin/
 solara/lib/oracleJdk-25/lib/
+solara/oracleJdk-25/lib/
+
