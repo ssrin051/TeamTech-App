@@ -1,30 +1,26 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:solara/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+testWidgets('Leash Distance slider renders and responds to drag',
+    (WidgetTester tester) async {
+  await tester.pumpWidget(const MyToggleDemo());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  //Verify label text
+  expect(find.text('Leash Distance'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  //Find slider by type
+  final sliderFinder = find.byType(Slider);
+  expect(sliderFinder, findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+  // Drag slider
+  await tester.drag(sliderFinder, const Offset(150, 0));
+  await tester.pumpAndSettle();
+
+  //Verify value changed
+  final Slider sliderWidget = tester.widget(sliderFinder);
+  expect(sliderWidget.value, greaterThan(0));
+});
+
 }

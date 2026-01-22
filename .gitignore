@@ -56,7 +56,8 @@ unlinked_spec.ds
 **/android/**/GeneratedPluginRegistrant.java
 **/android/key.properties
 *.jks
-
+/lib/oracleJdk-25/bin/
+/lib/oracleJdk-25/lib/
 # iOS/XCode related
 **/ios/**/*.mode1v3
 **/ios/**/*.mode2v3

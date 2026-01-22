@@ -31,43 +31,7 @@ class _ControlButtonsState extends State<ControlButtons> {
             _buildModeButton('Schedule'),
           ],
         ),
-        
-        const SizedBox(height: 30),
-        
-        // Brightness Control Section
-        const Text(
-          'Brightness Control',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 15),
-        Row(
-          children: [
-            const Icon(Icons.brightness_low),
-            Expanded(
-              child: Slider(
-                value: brightness,
-                min: 0,
-                max: 100,
-                divisions: 100,
-                label: '${brightness.round()}%',
-                activeColor: Colors.purple,
-                onChanged: (value) {
-                  setState(() {
-                    brightness = value;
-                  });
-                },
-              ),
-            ),
-            const Icon(Icons.brightness_high),
-          ],
-        ),
-        Text(
-          'Brightness: ${brightness.round()}%',
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 16),
-        ),
-        
+                
         const SizedBox(height: 30),
         
         // Quick Action Buttons
@@ -85,7 +49,7 @@ class _ControlButtonsState extends State<ControlButtons> {
           label: const Text('View Status'),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 15),
-            backgroundColor: Colors.purple,
+            backgroundColor: Color.fromRGBO(255, 187, 210, 1),
             foregroundColor: Colors.white,
           ),
         ),
@@ -100,7 +64,7 @@ class _ControlButtonsState extends State<ControlButtons> {
           label: const Text('Settings'),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 15),
-            backgroundColor: Colors.purple,
+            backgroundColor: Color.fromRGBO(255, 187, 210, 1),
             foregroundColor: Colors.white,
           ),
         ),
@@ -115,7 +79,7 @@ class _ControlButtonsState extends State<ControlButtons> {
           label: const Text('Set Timer'),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 15),
-            backgroundColor: Colors.purple,
+            backgroundColor: Color.fromRGBO(255, 187, 210, 1),
             foregroundColor: Colors.white,
           ),
         ),
@@ -132,7 +96,7 @@ class _ControlButtonsState extends State<ControlButtons> {
         });
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.purple : Colors.grey[300],
+        backgroundColor: isSelected ? Color.fromRGBO(255, 187, 210, 1) : Colors.grey[300],
         foregroundColor: isSelected ? Colors.white : Colors.black,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       ),
