@@ -27,6 +27,6 @@ jobs:
         run: flutter build macos
         working-directory: solara
 
-      - name: Build ios
-        run: flutter build ios
+      - name: Build web
+        run: flutter build web
         working-directory: solara
