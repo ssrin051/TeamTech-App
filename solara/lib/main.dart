@@ -133,7 +133,7 @@ class _MyToggleDemoState extends State<MyToggleDemo> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Leash Distance',
+            'Leash Distance (ft)',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -147,7 +147,7 @@ class _MyToggleDemoState extends State<MyToggleDemo> {
                 child: Slider(
                   value: _leashDistance,
                   min: 0,
-                  max: 100,
+                  max: 5,
                   divisions: 100,
                   label: _leashDistance.round().toString(),
                   activeColor: const Color.fromRGBO(225, 122, 156, 1),
