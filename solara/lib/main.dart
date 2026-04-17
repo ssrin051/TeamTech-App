@@ -162,7 +162,7 @@ class _MyToggleDemoState extends State<MyToggleDemo> {
                 width: 50,
                 child: Text(
                   '${_leashDistance.round()}',
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.center, 
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

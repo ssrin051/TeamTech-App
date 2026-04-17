@@ -92,7 +92,7 @@ class BluetoothManager {
     if (_connectedDevice != null) {
       await _connectedDevice!.disconnect();
       _connectedDevice = null;
-    }
+    } 
   }
   
   /// Discover services on the connected device
