@@ -353,7 +353,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                               : const Icon(Icons.arrow_forward_ios, size: 16),
                           onTap: isConnected ? null : () => _connectToDevice(device),
                         ),
-                      );
+                      ); 
                     },
                   ),
           ),
