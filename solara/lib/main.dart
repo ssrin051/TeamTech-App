@@ -170,7 +170,7 @@ class _MyToggleDemoState extends State<MyToggleDemo> {
                 ),
               ),
             ],
-          ),
+          ), 
         ],
       ),
     );
