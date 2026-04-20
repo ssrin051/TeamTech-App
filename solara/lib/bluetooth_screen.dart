@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
+import 'ble_constants.dart';
 import 'bluetooth_service.dart';
 
 /// Bluetooth Device List Screen
@@ -16,9 +20,17 @@ class BluetoothScreen extends StatefulWidget {
 class _BluetoothScreenState extends State<BluetoothScreen> {
   final BluetoothManager _bluetoothService = BluetoothManager();
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
+  BleUiConnectionState _connectionState = BleUiConnectionState.disconnected;
   bool _isScanning = false;
+  bool _isConnecting = false;
+  bool _isSubscribing = false;
+  List<DiscoveredBleDevice> _devices = <DiscoveredBleDevice>[];
   String _statusMessage = 'Checking Bluetooth...';
+  String _lastStatusPayload = 'No status received';
   StreamSubscription<BluetoothAdapterState>? _adapterStateSubscription;
+  StreamSubscription<List<DiscoveredBleDevice>>? _devicesSubscription;
+  StreamSubscription<BleUiConnectionState>? _connectionSubscription;
+  StreamSubscription<List<int>>? _statusSubscription;
 
   @override
   void initState() {
@@ -36,7 +48,6 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       return;
     }
 
-    // Monitor Bluetooth adapter state
     _adapterStateSubscription = FlutterBluePlus.adapterState.listen((state) {
       setState(() {
         _adapterState = state;
@@ -44,16 +55,57 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       });
     });
 
-    // Get initial state
+    _devicesSubscription = _bluetoothService.devicesStream.listen((devices) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _devices = devices;
+      });
+    });
+
+    _connectionSubscription = _bluetoothService.connectionStream.listen((state) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _connectionState = state;
+        _isConnecting = state == BleUiConnectionState.connecting;
+        _updateStatusMessage();
+      });
+    });
+
+    _statusSubscription = _bluetoothService.statusStream.listen((bytes) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _lastStatusPayload = utf8.decode(bytes, allowMalformed: true);
+      });
+    });
+
     _adapterState = await _bluetoothService.getBluetoothState();
     _updateStatusMessage();
   }
 
   void _updateStatusMessage() {
     setState(() {
+      if (_isScanning) {
+        _statusMessage = 'Scanning for rover...';
+        return;
+      }
+      if (_connectionState == BleUiConnectionState.connecting || _isConnecting) {
+        _statusMessage = 'Connecting to rover...';
+        return;
+      }
+      if (_connectionState == BleUiConnectionState.connected) {
+        _statusMessage = 'Connected';
+        return;
+      }
+
       switch (_adapterState) {
         case BluetoothAdapterState.on:
-          _statusMessage = 'Bluetooth is on. Ready to scan.';
+          _statusMessage = 'Disconnected';
           break;
         case BluetoothAdapterState.off:
           _statusMessage = 'Bluetooth is off. Please turn it on.';
@@ -95,17 +147,22 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
     setState(() {
       _isScanning = true;
-      _statusMessage = 'Scanning for devices...';
+      _devices = <DiscoveredBleDevice>[];
+      _statusMessage = 'Scanning for rover...';
     });
 
     try {
-      await _bluetoothService.startScan(timeout: const Duration(seconds: 4));
-      await Future.delayed(const Duration(seconds: 4));
+      await _bluetoothService.startScan(
+        timeout: const Duration(seconds: 6),
+        nameFilter: 'solara',
+        serviceUuidFilter: kRoverServiceUUID,
+      );
+      await Future.delayed(const Duration(seconds: 6));
       await _bluetoothService.stopScan();
-      
+
       setState(() {
         _isScanning = false;
-        _statusMessage = 'Found ${_bluetoothService.discoveredDevices.length} device(s)';
+        _statusMessage = 'Found ${_devices.length} device(s)';
       });
     } catch (e) {
       setState(() {
@@ -120,23 +177,26 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     }
   }
 
-  Future<void> _connectToDevice(BluetoothDevice device) async {
+  Future<void> _connectToDevice(DiscoveredBleDevice device) async {
     try {
       setState(() {
-        _statusMessage = 'Connecting to ${device.platformName.isNotEmpty ? device.platformName : device.remoteId}...';
+        _isConnecting = true;
+        _statusMessage = 'Connecting to ${device.name}...';
       });
 
       await _bluetoothService.connectToDevice(device);
-      
+      await _bluetoothService.subscribeToStatus();
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Connected to ${device.platformName.isNotEmpty ? device.platformName : device.remoteId}'),
+            content: Text('Connected to ${device.name}'),
             backgroundColor: Colors.green,
           ),
         );
         setState(() {
-          _statusMessage = 'Connected to ${device.platformName.isNotEmpty ? device.platformName : device.remoteId}';
+          _isConnecting = false;
+          _statusMessage = 'Connected to ${device.name}';
         });
       }
     } catch (e) {
@@ -145,6 +205,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
           SnackBar(content: Text('Failed to connect: $e')),
         );
         setState(() {
+          _isConnecting = false;
           _statusMessage = 'Connection failed: $e';
         });
       }
@@ -159,6 +220,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
           const SnackBar(content: Text('Disconnected')),
         );
         setState(() {
+          _isConnecting = false;
           _statusMessage = 'Disconnected';
         });
       }
@@ -171,10 +233,70 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     }
   }
 
+  Future<void> _sendTestCommand() async {
+    try {
+      await _bluetoothService.sendCommand(utf8.encode('PING'));
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Command sent: PING')),
+      );
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Command write failed: $e')),
+      );
+    }
+  }
+
+  Future<void> _readStatus() async {
+    try {
+      final List<int> status = await _bluetoothService.readStatus();
+      setState(() {
+        _lastStatusPayload = utf8.decode(status, allowMalformed: true);
+      });
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Status read failed: $e')),
+      );
+    }
+  }
+
+  Future<void> _subscribeToStatus() async {
+    setState(() {
+      _isSubscribing = true;
+    });
+    try {
+      await _bluetoothService.subscribeToStatus();
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Subscribe failed: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubscribing = false;
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
     _adapterStateSubscription?.cancel();
-    _bluetoothService.dispose();
+    _devicesSubscription?.cancel();
+    _connectionSubscription?.cancel();
+    _statusSubscription?.cancel();
+    unawaited(_bluetoothService.dispose());
     super.dispose();
   }
 
@@ -190,7 +312,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
         ),
         title: const Text('SOLARA Bluetooth'),
         actions: [
-          if (_bluetoothService.connectedDevice != null)
+          if (_connectionState == BleUiConnectionState.connected)
             IconButton(
               icon: const Icon(Icons.link_off),
               onPressed: _disconnect,
@@ -207,13 +329,17 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: _adapterState == BluetoothAdapterState.on
-                  ? Colors.green.shade50
-                  : Colors.orange.shade50,
+                      ? (_connectionState == BleUiConnectionState.connected
+                            ? Colors.green.shade50
+                            : Colors.orange.shade50)
+                      : Colors.red.shade50,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: _adapterState == BluetoothAdapterState.on
+                color: _connectionState == BleUiConnectionState.connected
                     ? Colors.green
-                    : Colors.orange,
+                    : (_adapterState == BluetoothAdapterState.on
+                        ? Colors.orange
+                        : Colors.red),
               ),
             ),
             child: Column(
@@ -228,8 +354,10 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                         'assets/icons/bluetooth.svg',
                         colorFilter: ColorFilter.mode(
                           _adapterState == BluetoothAdapterState.on
-                              ? Colors.green
-                              : Colors.orange,
+                                  ? (_connectionState == BleUiConnectionState.connected
+                                      ? Colors.green
+                                      : Colors.orange)
+                                  : Colors.red,
                           BlendMode.srcIn,
                         ),
                       ),
@@ -248,7 +376,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'State: ${_adapterState.toString().split('.').last}',
+                            'Status: ${_connectionState.name} | Adapter: ${_adapterState.toString().split('.').last}',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -283,7 +411,9 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
               child: ElevatedButton.icon(
                 onPressed: _isScanning || _adapterState != BluetoothAdapterState.on
                     ? null
-                    : _startScan,
+                    : (_connectionState == BleUiConnectionState.connected
+                    ? null
+                        : _startScan),
                 icon: _isScanning
                     ? const SizedBox(
                         width: 20,
@@ -303,7 +433,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
           // Device List
           Expanded(
-            child: _bluetoothService.discoveredDevices.isEmpty
+            child: _devices.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -329,11 +459,11 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _bluetoothService.discoveredDevices.length,
+                    itemCount: _devices.length,
                     itemBuilder: (context, index) {
-                      final device = _bluetoothService.discoveredDevices[index];
-                      final isConnected = _bluetoothService.connectedDevice?.remoteId == device.remoteId;
-                      
+                      final device = _devices[index];
+                      final isConnected = _bluetoothService.connectedDevice?.id == device.id;
+
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
@@ -342,21 +472,66 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                             color: isConnected ? Colors.blue : Colors.grey,
                           ),
                           title: Text(
-                            device.platformName.isNotEmpty
-                                ? device.platformName
-                                : 'Unknown Device',
+                            device.name,
                             style: const TextStyle(fontWeight: FontWeight.w500),
                           ),
-                          subtitle: Text(device.remoteId.toString()),
+                          subtitle: Text(device.id),
                           trailing: isConnected
                               ? const Icon(Icons.check_circle, color: Colors.green)
                               : const Icon(Icons.arrow_forward_ios, size: 16),
-                          onTap: isConnected ? null : () => _connectToDevice(device),
+                          onTap: isConnected || _isConnecting ? null : () => _connectToDevice(device),
                         ),
-                      ); 
+                      );
                     },
                   ),
           ),
+          if (_connectionState == BleUiConnectionState.connected)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                children: [
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Last Status: $_lastStatusPayload',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _sendTestCommand,
+                          child: const Text('Send Test Command'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _readStatus,
+                          child: const Text('Read Status'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _isSubscribing ? null : _subscribeToStatus,
+                      icon: _isSubscribing
+                          ? const SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.notifications_active),
+                      label: const Text('Subscribe to Status Notifications'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
